@@ -43,6 +43,10 @@ class Capture(Move):
     """
     captured_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
 
+    def __str__(self) -> str:
+        original = str(super())
+        return f'{original[:-2]}x{original[-2:]}'
+
 
 @dataclasses.dataclass()
 class Castle(BaseMove):
@@ -51,3 +55,9 @@ class Castle(BaseMove):
     """
     side: typing.Literal['kingside', 'queenside']
     colour: typing.Literal['black', 'white']
+
+    def __str__(self) -> str:
+        if self.side == 'kingside':
+            return 'O-O'
+        else:
+            return 'O-O-O'
