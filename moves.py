@@ -1,11 +1,16 @@
 import typing
 import dataclasses
+import abc
 
 # contains Move class and its subclasses
 
 
+class BaseMove(abc.ABC):
+    """Base class for move types"""
+
+
 @dataclasses.dataclass
-class Move:
+class Move(BaseMove):
     """Represents a standard move.
     Stores starting square, destination square, 
     and the type and colour of the moving piece
@@ -14,7 +19,7 @@ class Move:
     start: str
     end: str
 
-    piece_type: typing.Literal['', 'N', 'B', 'K', 'R', 'Q'] = dataclasses.field(init=False)
+    piece_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
     color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
 
     # shows whether string representation requires starting square
@@ -29,3 +34,20 @@ class Move:
             start = self.start[1]
 
         return f'{self.piece_type}{start}{self.end}'
+
+
+@dataclasses.dataclass()
+class Capture(Move):
+    """Represents a capture move.
+    In addition to Move information, store the captured piece's type
+    """
+    captured_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
+
+
+@dataclasses.dataclass()
+class Castle(BaseMove):
+    """Represents 'castling'.
+    Stores player colour and which side they castled on.
+    """
+    side: typing.Literal['kingside', 'queenside']
+    colour: typing.Literal['black', 'white']
