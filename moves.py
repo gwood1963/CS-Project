@@ -17,6 +17,15 @@ class Move:
     piece_type: typing.Literal['', 'N', 'B', 'K', 'R', 'Q'] = dataclasses.field(init=False)
     color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
 
+    # shows whether string representation requires starting square
+    show_start: typing.Literal['none', 'rank', 'file'] = dataclasses.field(init=False)
+
     def __str__(self) -> str:
         """Returns move in chess notation."""
-        return f'{self.piece_type}{self.end}'
+        start = ''
+        if self.show_start == 'file':
+            start = self.start[0]
+        elif self.show_start == 'rank':
+            start = self.start[1]
+
+        return f'{self.piece_type}{start}{self.end}'
