@@ -38,3 +38,12 @@ class Pawn(Piece):
                 return True
             else:
                 return False
+
+
+@dataclasses.dataclass()
+class Knight(Piece):
+    def legal_move(self, dest: str) -> bool:
+        files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
+        rank_diff = abs(int(dest[1]) - int(self.square[1]))
+        file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
+        return (rank_diff, file_diff) in ((1,2), (2,1))
