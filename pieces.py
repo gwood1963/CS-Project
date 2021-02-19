@@ -57,3 +57,12 @@ class Bishop(Piece):
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
         return rank_diff == file_diff
 
+
+@dataclasses.dataclass()
+class Rook(Piece):
+    def legal_move(self, dest: str) -> bool:
+        files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
+        rank_diff = abs(int(dest[1]) - int(self.square[1]))
+        file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
+        return 0 in (rank_diff, file_diff)
+
