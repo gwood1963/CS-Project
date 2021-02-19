@@ -36,4 +36,25 @@ class Board:
     def isOccupied(self, square: str) -> bool:
         """Tests if a given square is occupied."""
         return square in self.position
+
+    @classmethod
+    def standardPosition(cls) -> Board:
+        board = cls()
+        for file in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
+            board.addPiece('', file + '2', 'white')
+            board.addPiece('', file + '7', 'black')
+        for file in ('a', 'h'):
+            board.addPiece('R', file + '1', 'white')
+            board.addPiece('R', file + '8', 'black')
+        for file in ('b', 'g'):
+            board.addPiece('N', file + '1', 'white')
+            board.addPiece('N', file + '8', 'black')
+        for file in ('c', 'f'):
+            board.addPiece('B', file + '1', 'white')
+            board.addPiece('B', file + '8', 'black')
+        board.addPiece('Q', 'd1', 'white')
+        board.addPiece('Q', 'd8', 'black')
+        board.addPiece('K', 'e1', 'white')
+        board.addPiece('K', 'e8', 'black')
+        return board
     
