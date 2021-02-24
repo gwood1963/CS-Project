@@ -10,6 +10,11 @@ class Piece(abc.ABC):
     square: str
     color: typing.Literal['black', 'white']
 
+    @property
+    @abc.abstractmethod
+    def type(self) -> typing.Literal['', 'N', 'B', 'R', 'Q', 'K']:
+        """Returns piece type."""
+
     @abc.abstractmethod
     def legal_move(self, dest: str) -> bool:
         """Tests if the piece can move to a given square."""
@@ -20,6 +25,10 @@ class Piece(abc.ABC):
 
 @dataclasses.dataclass()
 class Pawn(Piece):
+    @property
+    def type(self):
+        return ''
+    
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         if abs(files.index(self.square[0]) - files.index(dest[0])) > 1:
@@ -42,6 +51,10 @@ class Pawn(Piece):
 
 @dataclasses.dataclass()
 class Knight(Piece):
+    @property
+    def type(self):
+        return 'N'
+
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
@@ -51,6 +64,10 @@ class Knight(Piece):
 
 @dataclasses.dataclass()
 class Bishop(Piece):
+    @property
+    def type(self):
+        return 'B'
+        
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
@@ -60,6 +77,10 @@ class Bishop(Piece):
 
 @dataclasses.dataclass()
 class Rook(Piece):
+    @property
+    def type(self):
+        return 'R'
+
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
@@ -69,6 +90,10 @@ class Rook(Piece):
 
 @dataclasses.dataclass()
 class Queen(Piece):
+    @property
+    def type(self):
+        return 'Q'
+
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
@@ -78,6 +103,10 @@ class Queen(Piece):
 
 @dataclasses.dataclass()
 class King(Piece):
+    @property
+    def type(self):
+        return 'K'
+
     def legal_move(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
