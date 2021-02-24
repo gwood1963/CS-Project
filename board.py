@@ -37,6 +37,12 @@ class Board:
         """Tests if a given square is occupied."""
         return square in self.position
 
+    def move(self, start: str, end: str):
+        """Moves a piece on the board."""
+        if self.isOccupied(start) and not self.isOccupied(end):
+            self.position[end] = self.position[start]
+            self.removePieceAt(start)
+
     @classmethod
     def standardPosition(cls) -> Board:
         board = cls()
