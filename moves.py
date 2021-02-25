@@ -68,8 +68,14 @@ class Promotion(Move):
     """Represents promoting a pawn if no capture was required."""
     promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
 
+    def __str__(self):
+        return str(super()) + self.promote_type
+
 
 @dataclasses.dataclass()
 class PromotionCapture(Capture):
     """Represents promoting a pawn if pawn made a capture."""
     promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
+
+    def __str__(self):
+        return str(super()) + self.promote_type
