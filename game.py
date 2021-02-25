@@ -56,14 +56,30 @@ class Game:
             elif start[0] != dest[0] and self.board.isOccupied(dest):
                 # capturing a piece
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    return "You can't capture your own pieces."
+                    pass # UI message: "You can't capture your own pieces."
                 if dest[1] == '8': 
-                    move = moves.Promotion(start, dest)
+                    move = moves.PromotionCapture(start, dest)
                     # call UI so user can select piece type to promote to
                 else:
                     move = moves.Capture(start, dest)
+                move.captured_type = self.board.getPieceAt(dest).type
+                self.board.removePieceAt(dest)
             move.color = self.to_move
-            move.piece_type = moving_piece.type
+            move.piece_type = ''
+            self.move_history.append(move)
+            self.board.move(start, dest)
+            return
+
+        # check knight move
+        if moving_piece.type == 'N':
+            if self.board.isOccupied(dest):
+                if self.board.getPieceAt(dest).color == self.to_move:
+                    pass # UI message: "You can't capture your own pieces."
+                move = moves.Capture(start, dest)
+                move.captured_type = self.board.getPieceAt(dest).type
+                self.board.removePieceAt(dest)
+            move.color = self.to_move
+            move.piece_type = ''
             self.move_history.append(move)
             self.board.move(start, dest)
             return
