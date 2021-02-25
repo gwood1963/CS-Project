@@ -22,12 +22,10 @@ class Game:
         """Moves a piece from start to dest."""
 
         moving_piece = self.board.getPieceAt(start)
-        if moving_piece is None:
-            return None # nothing hammens if there's no piece to move
-        elif moving_piece.color != self.to_move:
+        if moving_piece.color != self.to_move:
             return 'You can only move your own pieces.'
 
-        move: moves.BaseMove
+        move: moves.BaseMove = moves.Move(start, dest)
 
         # test for castling
         if (moving_piece.type == 'K' and dest[0] in ('c', 'g')
@@ -42,4 +40,27 @@ class Game:
             self.move_history.append(move)
             self.players[self.to_move].can_castle = False
             return 'success'
-            
+
+        if not moving_piece.legal_move(dest):
+            return "Illegal move."
+
+        # check pawn moves
+        if moving_piece.type == '':
+            # straight forward if not blocked
+            if (start[0] == dest[0] 
+                and not self.board.isOccupied(start[0] + str(int(start[1]) + 1))):
+                if dest[1] == '8': 
+                    move = moves.Promotion(start, dest)
+                    # call UI so user can select piece type to promote to
+            elif start[0] != dest[0] and self.board.isOccupied(dest):
+                # capturing a piece
+                if self.board.getPieceAt(dest).color == self.to_move:
+                    return "You can't capture your own pieces."
+                if dest[1] == '8': 
+                    move = moves.Promotion(start, dest)
+                    # call UI so user can select piece type to promote to
+                else:
+                    move = moves.Capture(start, dest)
+            move.color = self.to_move
+            move.piece_type = moving_piece.type
+            return 'success'
