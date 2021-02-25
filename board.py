@@ -23,9 +23,9 @@ class Board:
         piece = piece_types[piece_type](square, color)
         self.position[square] = piece
 
-    def getPieceAt(self, square: str) -> pieces.Piece | None:
-        """Returns the piece at a given square or None if square is unoccupied."""
-        return self.position.get(square)
+    def getPieceAt(self, square: str) -> pieces.Piece:
+        """Returns the piece at a given square."""
+        return self.position[square]
 
     def removePieceAt(self, square: str):
         """Removes the piece at a given square.
