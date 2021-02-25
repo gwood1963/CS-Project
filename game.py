@@ -40,13 +40,17 @@ class Game:
             self.move_history.append(move)
             self.players[self.to_move].can_castle = False
             self.board.move(start, dest)
+            if dest[0] == 'c':
+                self.board.move('a'+start[1], 'd'+start[1])
+            elif dest[0] == 'g':
+                self.board.move('h'+start[1], 'f'+start[1])
             return
 
         if not moving_piece.legal_move(dest):
             pass # UI message: "Illegal move."
 
         # check pawn moves
-        if moving_piece.type == '':
+        elif moving_piece.type == '':
             # straight forward if not blocked
             if (start[0] == dest[0] 
                 and not self.board.isOccupied(start[0] + str(int(start[1]) + 1))):
@@ -64,28 +68,18 @@ class Game:
                     move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = ''
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
 
         # check knight move
-        if moving_piece.type == 'N':
+        elif moving_piece.type == 'N':
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = 'N'
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
 
         # check bishop move
-        if moving_piece.type == 'B':
+        elif moving_piece.type == 'B':
             # check intervening squares
             r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
             f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
@@ -99,14 +93,9 @@ class Game:
                 move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = 'B'
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
 
         # check rook move
-        if moving_piece.type == 'R':
+        elif moving_piece.type == 'R':
             # check intervening squares
             if start[0] == dest[0]:
                 r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
@@ -123,14 +112,9 @@ class Game:
                 move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = 'R'
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
 
         # check queen move
-        if moving_piece.type == 'Q':
+        elif moving_piece.type == 'Q':
             # check intervening squares
             if start[0] == dest[0]:
                 r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
@@ -152,22 +136,17 @@ class Game:
                 move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = 'Q'
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
 
         # check king move
-        if moving_piece.type == 'K':
+        elif moving_piece.type == 'K':
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
-            move.color = self.to_move
-            move.piece_type = 'K'
-            self.move_history.append(move)
-            self.board.move(start, dest)
-            return
+
+        move.color = self.to_move
+        move.piece_type = moving_piece.type
+        self.move_history.append(move)
+        self.board.move(start, dest)
