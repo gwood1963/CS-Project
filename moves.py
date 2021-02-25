@@ -23,7 +23,7 @@ class Move(BaseMove):
     color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
 
     # shows whether string representation requires starting square
-    show_start: typing.Literal['none', 'rank', 'file'] = dataclasses.field(init=False)
+    show_start: typing.Literal['none', 'rank', 'file'] = dataclasses.field(init=False, default='none')
 
     def __str__(self) -> str:
         """Returns move in chess notation."""
@@ -45,7 +45,8 @@ class Capture(Move):
 
     def __str__(self) -> str:
         original = str(super())
-        return f'{original[:-2]}x{original[-2:]}'
+        return ((original[:-2] if self.piece_type != '' else self.end[0]) 
+                + f'x{original[-2:]}')
 
 
 @dataclasses.dataclass()
