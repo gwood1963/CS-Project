@@ -61,3 +61,15 @@ class Castle(BaseMove):
             return 'O-O'
         else:
             return 'O-O-O'
+
+
+@dataclasses.dataclass()
+class Promotion(Move):
+    """Represents promoting a pawn if no capture was required."""
+    promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
+
+
+@dataclasses.dataclass()
+class PromotionCapture(Capture):
+    """Represents promoting a pawn if pawn made a capture."""
+    promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
