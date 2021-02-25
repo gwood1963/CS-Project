@@ -18,12 +18,12 @@ class Game:
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
 
-    def move(self, start: str, dest: str) -> str | None: # return value used by interface
+    def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
 
         moving_piece = self.board.getPieceAt(start)
         if moving_piece.color != self.to_move:
-            return 'You can only move your own pieces.'
+            pass # UI message: 'You can only move your own pieces.'
 
         move: moves.BaseMove = moves.Move(start, dest)
 
@@ -34,15 +34,16 @@ class Game:
                                                if dest[0] == 'c' 
                                                else ('f', 'g'))]
             if all(not self.board.isOccupied(square) for square in squares):
-                return 'Illegal move.'
+                pass # UI message 'Illegal move.'
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
                                 self.to_move)
             self.move_history.append(move)
             self.players[self.to_move].can_castle = False
-            return 'success'
+            self.board.move(start, dest)
+            return
 
         if not moving_piece.legal_move(dest):
-            return "Illegal move."
+            pass # UI message: "Illegal move."
 
         # check pawn moves
         if moving_piece.type == '':
@@ -63,4 +64,6 @@ class Game:
                     move = moves.Capture(start, dest)
             move.color = self.to_move
             move.piece_type = moving_piece.type
-            return 'success'
+            self.move_history.append(move)
+            self.board.move(start, dest)
+            return
