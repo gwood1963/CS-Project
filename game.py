@@ -33,7 +33,7 @@ class Game:
             squares = [file + '1' for file in (('b', 'c', 'd') 
                                                if dest[0] == 'c' 
                                                else ('f', 'g'))]
-            if all(not self.board.isOccupied(square) for square in squares):
+            if any(self.board.isOccupied(square) for square in squares):
                 pass # UI message 'Illegal move.'
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
                                 self.to_move)
@@ -79,7 +79,52 @@ class Game:
                 move.captured_type = self.board.getPieceAt(dest).type
                 self.board.removePieceAt(dest)
             move.color = self.to_move
-            move.piece_type = ''
+            move.piece_type = 'N'
             self.move_history.append(move)
             self.board.move(start, dest)
             return
+
+        # check bishop move
+        if moving_piece.type == 'B':
+            # check intervening squares
+            r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
+            f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
+            f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
+            squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
+            if any(self.board.isOccupied(square) for square in squares):
+                pass # UI message: Illegal move.
+            if self.board.isOccupied(dest):
+                if self.board.getPieceAt(dest).color == self.to_move:
+                    pass # UI message: "You can't capture your own pieces."
+                move = moves.Capture(start, dest)
+                move.captured_type = self.board.getPieceAt(dest).type
+                self.board.removePieceAt(dest)
+            move.color = self.to_move
+            move.piece_type = 'B'
+            self.move_history.append(move)
+            self.board.move(start, dest)
+            return
+
+        # check rook move
+        if moving_piece.type == 'R':
+            # check intervening squares
+            if start[0] == dest[0]:
+                r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
+                squares = [start[0] + str(r) for r in range(r1+1, r2)]
+            else:
+                f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
+                f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
+                squares = [self.files[f] + start[1] for f in range(f1+1, f2)]
+            if any(self.board.isOccupied(square) for square in squares):
+                pass # UI message: Illegal move.
+            if self.board.isOccupied(dest):
+                if self.board.getPieceAt(dest).color == self.to_move:
+                    pass # UI message: "You can't capture your own pieces."
+                move = moves.Capture(start, dest)
+                move.captured_type = self.board.getPieceAt(dest).type
+                self.board.removePieceAt(dest)
+            move.color = self.to_move
+            move.piece_type = 'R'
+            self.move_history.append(move)
+            self.board.move(start, dest)
+            return   
