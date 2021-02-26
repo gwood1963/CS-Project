@@ -88,3 +88,9 @@ class PromotionCapture(Capture):
 
     def __str__(self):
         return str(super()) + self.promote_type
+
+@dataclasses.dataclass()
+class EnPassant(Capture):
+    """Represents capturing en-passant."""
+
+    captured_square: str = dataclasses.field(init=False)

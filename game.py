@@ -110,6 +110,18 @@ class Game:
                     # call UI so user can select piece type to promote to
                 else:
                     move = moves.Capture(start, dest)
+            elif start[0] != dest[0] and not self.board.isOccupied(dest):
+                # check en-passant capture
+                square = dest[0] + start[1]
+                last_move = self.move_history[-1]
+                if (isinstance(last_move, moves.Move) and last_move.end == square
+                    and last_move.piece_type == ''
+                    and last_move.start == dest[0] + '7' if opponent == 'black' else '2'):
+                    move = moves.EnPassant(start, dest)
+                    move.captured_square = square
+                else:
+                    # UI message: Illegal move.
+                    return
 
         # check knight move
         elif moving_piece.type == 'N':
@@ -187,8 +199,11 @@ class Game:
                 move = moves.Capture(start, dest)
 
         if isinstance(move, moves.Capture):
-            move.captured_type = self.board.getPieceAt(dest).type
-            self.board.removePieceAt(dest)
+            captured_square = dest
+            if isinstance(move, moves.EnPassant):
+                captured_square = move.captured_square
+            move.captured_type = self.board.getPieceAt(captured_square).type
+            self.board.removePieceAt(captured_square)
         move.color = current
         move.piece_type = moving_piece.type
         self.board.move(start, dest)
