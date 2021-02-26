@@ -37,6 +37,21 @@ class Board:
         """Tests if a given square is occupied."""
         return square in self.position
 
+    def getPieces(self, *, color: typing.Literal['black', 'white'] | None = None,
+                  type: typing.Literal['', 'N', 'B', 'R', 'Q', 'K'] | None = None):
+        """Returns all pieces that satisfy a condition
+        e.g. all white pieces, all rooks, all black knights
+        """
+        filters = []
+        if color is not None:
+            def f1(p: pieces.Piece): return p.color == color
+            filters.append(f1)
+        if type is not None:
+            def f2(p: pieces.Piece): return p.type == type
+            filters.append(f2)
+        return [piece for piece in self.position.values() 
+                if all(f(piece) for f in filters)]
+
     def move(self, start: str, end: str):
         """Moves a piece on the board."""
         if self.isOccupied(start) and not self.isOccupied(end):
