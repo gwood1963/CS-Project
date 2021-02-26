@@ -61,11 +61,15 @@ class Castle(BaseMove):
     side: typing.Literal['kingside', 'queenside']
     colour: typing.Literal['black', 'white']
 
+    check: bool = dataclasses.field(init=False)
+    checkmate: bool = dataclasses.field(init=False)
+
     def __str__(self) -> str:
+        end = '#' if self.checkmate else '+' if self.check else ''
         if self.side == 'kingside':
-            return 'O-O'
+            return 'O-O' + end
         else:
-            return 'O-O-O'
+            return 'O-O-O' + end
 
 
 @dataclasses.dataclass()
