@@ -40,7 +40,7 @@ class Board:
         return square in self.position
 
     def getPieces(self, *, color: typing.Literal['black', 'white'] | None = None,
-                  type: typing.Literal['', 'N', 'B', 'R', 'Q', 'K'] | None = None):
+                  type: list[typing.Literal['', 'N', 'B', 'R', 'Q', 'K']] | None = None):
         """Returns all pieces that satisfy a condition
         e.g. all white pieces, all rooks, all black knights
         """
@@ -49,7 +49,7 @@ class Board:
             def f1(p: pieces.Piece): return p.color == color
             filters.append(f1)
         if type is not None:
-            def f2(p: pieces.Piece): return p.type == type
+            def f2(p: pieces.Piece): return p.type in type
             filters.append(f2)
         return [piece for piece in self.position.values() 
                 if all(f(piece) for f in filters)]

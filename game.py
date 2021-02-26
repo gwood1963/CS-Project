@@ -18,11 +18,34 @@ class Game:
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
 
+    def inCheck(self, color: typing.Literal['black', 'white']) -> bool:
+        king = self.board.getPieces(color=color, type=['K'])[0]
+        opponent = 'black' if color == 'white' else 'white'
+        pawns = self.board.getPieces(color=opponent, type=[''])
+        f1, f2 = self.files.index(king.square[0]) + 1, self.files.index(king.square[0]) - 1
+        r = int(king.square[1]) + 1 if color == 'white' else -1
+        if any(p.square in (self.files[f1] + str(r), self.files[f2] + str(r)) 
+               for p in pawns):
+            return True
+        elif any(piece.color == opponent and piece.legal_move(king.square) 
+                 for piece in self.board.scanDiagonals(king.square)):
+            return True
+        elif any(piece.color == opponent and piece.legal_move(king.square) 
+                 for piece in self.board.scanRankandFile(king.square)):
+            return True
+        elif any(piece.legal_move(king.square) 
+                 for piece in self.board.getPieces(type=['N'], color=opponent)):
+            return True
+        else:
+            return False
+
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
 
+        current = self.to_move
+        opponent = 'black' if current == 'white' else 'white'
         moving_piece = self.board.getPieceAt(start)
-        if moving_piece.color != self.to_move:
+        if moving_piece.color != current:
             # UI message: 'You can only move your own pieces.'
             return
 
@@ -30,7 +53,10 @@ class Game:
 
         # test for castling
         if (moving_piece.type == 'K' and dest[0] in ('c', 'g')
-            and start[1] == dest[1] and self.players[self.to_move].can_castle):
+            and start[1] == dest[1]):
+            if not self.players[current].can_castle or self.players[current].in_check:
+                # UI message: Illegal move.
+                return
             # check intervening squares
             squares = [file + '1' for file in (('b', 'c', 'd') 
                                                if dest[0] == 'c' 
@@ -39,14 +65,22 @@ class Game:
                 # UI message 'Illegal move.'
                 return
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
-                                self.to_move)
+                                current)
             self.move_history.append(move)
-            self.players[self.to_move].can_castle = False
+            self.players[current].can_castle = False
             self.board.move(start, dest)
             if dest[0] == 'c':
                 self.board.move('a'+start[1], 'd'+start[1])
             elif dest[0] == 'g':
                 self.board.move('h'+start[1], 'f'+start[1])
+            if self.inCheck(current):
+                # roll back position
+                # UI alert: Illegal move.
+                return
+            if self.inCheck(opponent):
+                self.players[opponent].in_check = True
+                move.check = True
+                # UI message: check
             return
 
         if not moving_piece.legal_move(dest):
@@ -59,7 +93,7 @@ class Game:
             if (start[0] == dest[0] and not self.board.isOccupied(dest)):
                 if self.board.isOccupied(
                     start[0] + str(int(start[1]) 
-                                   + 1 if self.to_move == 'white' else -1)
+                                   + 1 if current == 'white' else -1)
                 ):
                     # UI message: Illegal move.
                     return
@@ -68,7 +102,7 @@ class Game:
                     # call UI so user can select piece type to promote to
             elif start[0] != dest[0] and self.board.isOccupied(dest):
                 # capturing a piece
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 if dest[1] == '8': 
@@ -80,7 +114,7 @@ class Game:
         # check knight move
         elif moving_piece.type == 'N':
             if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 move = moves.Capture(start, dest)
@@ -96,7 +130,7 @@ class Game:
                 # UI message: Illegal move.
                 return
             if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 move = moves.Capture(start, dest)
@@ -115,7 +149,7 @@ class Game:
                 # UI message: Illegal move.
                 return
             if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 move = moves.Capture(start, dest)
@@ -139,7 +173,7 @@ class Game:
                 # UI message: Illegal move.
                 return
             if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 move = moves.Capture(start, dest)
@@ -147,7 +181,7 @@ class Game:
         # check king move
         elif moving_piece.type == 'K':
             if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == self.to_move:
+                if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
                     return
                 move = moves.Capture(start, dest)
@@ -155,8 +189,23 @@ class Game:
         if isinstance(move, moves.Capture):
             move.captured_type = self.board.getPieceAt(dest).type
             self.board.removePieceAt(dest)
-        move.color = self.to_move
+        move.color = current
         move.piece_type = moving_piece.type
-        self.move_history.append(move)
         self.board.move(start, dest)
         moving_piece.square = dest
+        
+        # check if new position puts a player in check
+        if self.inCheck(current):
+            # roll back position
+            # UI alert: Illegal move.
+            return
+        elif self.players[current].in_check:
+            self.players[current].in_check = False
+        if self.inCheck(opponent):
+            self.players[opponent].in_check = True
+            move.check = True
+            # UI message: check
+        
+        self.move_history.append(move)
+        self.to_move = opponent
+        # update UI
