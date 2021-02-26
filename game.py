@@ -23,18 +23,21 @@ class Game:
 
         moving_piece = self.board.getPieceAt(start)
         if moving_piece.color != self.to_move:
-            pass # UI message: 'You can only move your own pieces.'
+            # UI message: 'You can only move your own pieces.'
+            return
 
         move: moves.BaseMove = moves.Move(start, dest)
 
         # test for castling
         if (moving_piece.type == 'K' and dest[0] in ('c', 'g')
             and start[1] == dest[1] and self.players[self.to_move].can_castle):
+            # check intervening squares
             squares = [file + '1' for file in (('b', 'c', 'd') 
                                                if dest[0] == 'c' 
                                                else ('f', 'g'))]
             if any(self.board.isOccupied(square) for square in squares):
-                pass # UI message 'Illegal move.'
+                # UI message 'Illegal move.'
+                return
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
                                 self.to_move)
             self.move_history.append(move)
@@ -47,24 +50,27 @@ class Game:
             return
 
         if not moving_piece.legal_move(dest):
-            pass # UI message: "Illegal move."
+            # UI message: "Illegal move."
+            return
 
         # check pawn moves
         elif moving_piece.type == '':
             # straight forward if not blocked
-            if (start[0] == dest[0] 
-                and not self.board.isOccupied(dest)):
+            if (start[0] == dest[0] and not self.board.isOccupied(dest)):
                 if self.board.isOccupied(
-                    start[0] + str(int(start[1]) + 1 if self.to_move == 'white' else -1)
+                    start[0] + str(int(start[1]) 
+                                   + 1 if self.to_move == 'white' else -1)
                 ):
-                    pass # UI message: Illegal move.
+                    # UI message: Illegal move.
+                    return
                 if dest[1] == '8': 
                     move = moves.Promotion(start, dest)
                     # call UI so user can select piece type to promote to
             elif start[0] != dest[0] and self.board.isOccupied(dest):
                 # capturing a piece
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 if dest[1] == '8': 
                     move = moves.PromotionCapture(start, dest)
                     # call UI so user can select piece type to promote to
@@ -75,7 +81,8 @@ class Game:
         elif moving_piece.type == 'N':
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 move = moves.Capture(start, dest)
 
         # check bishop move
@@ -86,10 +93,12 @@ class Game:
             f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
             squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
             if any(self.board.isOccupied(square) for square in squares):
-                pass # UI message: Illegal move.
+                # UI message: Illegal move.
+                return
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 move = moves.Capture(start, dest)
 
         # check rook move
@@ -103,10 +112,12 @@ class Game:
                 f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
                 squares = [self.files[f] + start[1] for f in range(f1+1, f2)]
             if any(self.board.isOccupied(square) for square in squares):
-                pass # UI message: Illegal move.
+                # UI message: Illegal move.
+                return
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 move = moves.Capture(start, dest)
 
         # check queen move
@@ -125,17 +136,20 @@ class Game:
                 f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
                 squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
             if any(self.board.isOccupied(square) for square in squares):
-                pass # UI message: Illegal move.
+                # UI message: Illegal move.
+                return
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 move = moves.Capture(start, dest)
 
         # check king move
         elif moving_piece.type == 'K':
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == self.to_move:
-                    pass # UI message: "You can't capture your own pieces."
+                    # UI message: "You can't capture your own pieces."
+                    return
                 move = moves.Capture(start, dest)
 
         if isinstance(move, moves.Capture):
