@@ -22,6 +22,9 @@ class Move(BaseMove):
     piece_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
     color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
 
+    check: bool = dataclasses.field(init=False)
+    checkmate: bool = dataclasses.field(init=False)
+
     # shows whether string representation requires starting square
     show_start: typing.Literal['none', 'rank', 'file'] = dataclasses.field(init=False, default='none')
 
@@ -33,7 +36,8 @@ class Move(BaseMove):
         elif self.show_start == 'rank':
             start = self.start[1]
 
-        return f'{self.piece_type}{start}{self.end}'
+        return (f'{self.piece_type}{start}{self.end}'
+                + '#' if self.checkmate else '+' if self.check else '')
 
 
 @dataclasses.dataclass()
