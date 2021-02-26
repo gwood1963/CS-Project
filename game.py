@@ -53,7 +53,11 @@ class Game:
         elif moving_piece.type == '':
             # straight forward if not blocked
             if (start[0] == dest[0] 
-                and not self.board.isOccupied(start[0] + str(int(start[1]) + 1))):
+                and not self.board.isOccupied(dest)):
+                if self.board.isOccupied(
+                    start[0] + str(int(start[1]) + 1 if self.to_move == 'white' else -1)
+                ):
+                    pass # UI message: Illegal move.
                 if dest[1] == '8': 
                     move = moves.Promotion(start, dest)
                     # call UI so user can select piece type to promote to
@@ -66,8 +70,6 @@ class Game:
                     # call UI so user can select piece type to promote to
                 else:
                     move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
         # check knight move
         elif moving_piece.type == 'N':
@@ -75,8 +77,6 @@ class Game:
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
         # check bishop move
         elif moving_piece.type == 'B':
@@ -91,8 +91,6 @@ class Game:
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
         # check rook move
         elif moving_piece.type == 'R':
@@ -110,8 +108,6 @@ class Game:
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
         # check queen move
         elif moving_piece.type == 'Q':
@@ -134,8 +130,6 @@ class Game:
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
         # check king move
         elif moving_piece.type == 'K':
@@ -143,9 +137,10 @@ class Game:
                 if self.board.getPieceAt(dest).color == self.to_move:
                     pass # UI message: "You can't capture your own pieces."
                 move = moves.Capture(start, dest)
-                move.captured_type = self.board.getPieceAt(dest).type
-                self.board.removePieceAt(dest)
 
+        if isinstance(move, moves.Capture):
+            move.captured_type = self.board.getPieceAt(dest).type
+            self.board.removePieceAt(dest)
         move.color = self.to_move
         move.piece_type = moving_piece.type
         self.move_history.append(move)
