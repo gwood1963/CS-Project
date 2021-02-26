@@ -45,7 +45,7 @@ class Capture(Move):
 
     def __str__(self) -> str:
         original = str(super())
-        return ((original[:-2] if self.piece_type != '' else self.end[0]) 
+        return ((original[:-2] if self.piece_type != '' else self.start[0]) 
                 + f'x{original[-2:]}')
 
 
