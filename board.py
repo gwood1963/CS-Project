@@ -11,6 +11,8 @@ class Board:
     """
     position: dict[str, pieces.Piece] = dataclasses.field(default_factory=dict, init=False)
 
+    files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
+
     def addPiece(self, 
                  piece_type: typing.Literal['', 'N', 'B', 'R', 'Q', 'K'], 
                  square: str, color: typing.Literal['black', 'white']):
@@ -52,6 +54,38 @@ class Board:
         return [piece for piece in self.position.values() 
                 if all(f(piece) for f in filters)]
 
+    def scanDiagonals(self, square: str) -> list[pieces.Piece]:
+        """Returns first piece on each diagonal from square."""
+        rank, file = int(square[1]), self.files.index(square[0])
+        directions = ((1,1), (-1,1), (-1,-1), (1,-1))
+        pieces = []
+        for direction in directions:
+            r, f = rank + direction[1], file + direction[0]
+            while 1 <= r <= 8 and 0 <= f <= 7:
+                s = self.files[f] + str(r)
+                if self.isOccupied(s):
+                    pieces.append(self.getPieceAt(s))
+                    break
+                r += direction[1]
+                f += direction[0]
+        return pieces
+
+    def scanRankandFile(self, square: str) -> list[pieces.Piece]:
+        """Returns first pieces on rank and file in each direction from square."""
+        rank, file = int(square[1]), self.files.index(square[0])
+        directions = ((1,0), (0,1), (-1,0), (0,-1))
+        pieces = []
+        for direction in directions:
+            r, f = rank + direction[1], file + direction[0]
+            while 1 <= r <= 8 and 0 <= f <= 7:
+                s = self.files[f] + str(r)
+                if self.isOccupied(s):
+                    pieces.append(self.getPieceAt(s))
+                    break
+                r += direction[1]
+                f += direction[0]
+        return pieces
+
     def move(self, start: str, end: str):
         """Moves a piece on the board."""
         if self.isOccupied(start) and not self.isOccupied(end):
@@ -61,7 +95,7 @@ class Board:
     @classmethod
     def standardPosition(cls) -> Board:
         board = cls()
-        for file in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
+        for file in cls.files:
             board.addPiece('', file + '2', 'white')
             board.addPiece('', file + '7', 'black')
         for file in ('a', 'h'):
