@@ -159,3 +159,4 @@ class Game:
         move.piece_type = moving_piece.type
         self.move_history.append(move)
         self.board.move(start, dest)
+        moving_piece.square = dest
