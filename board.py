@@ -86,6 +86,34 @@ class Board:
                 f += direction[0]
         return pieces
 
+    def adjacentSquares(self, square: str) -> list[str]:
+        file = self.files.index(square[0])
+        rank = int(square[1])
+        squares = []
+        dirs = ((1,0), (1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1))
+        for dir in dirs:
+            f, r = file+dir[0], rank+dir[1]
+            if 0 <= f <= 7 and 1 <= r <= 8:
+                squares.append(self.files[f] + str(r))
+        return squares
+
+    def interveningSquares(self, square1: str, square2: str) -> list[str]:
+        if square1[0] == square2[0]:
+            r1 = min(int(square1[1]), int(square2[1]))
+            r2 = max(int(square1[1]), int(square2[1]))
+            squares = [square1[0] + str(r) for r in range(r1+1, r2)]
+        elif square1[1] == square2[1]:
+            f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
+            f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
+            squares = [self.files[f] + square1[1] for f in range(f1+1, f2)]
+        else:
+            r1 = min(int(square1[1]), int(square2[1]))
+            r2 = max(int(square1[1]), int(square2[1]))
+            f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
+            f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
+            squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
+        return squares
+
     def move(self, start: str, end: str):
         """Moves a piece on the board."""
         if self.isOccupied(start) and not self.isOccupied(end):

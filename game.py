@@ -43,6 +43,18 @@ class Game:
         opponent = 'black' if color == 'white' else 'white'
         return self.threatened(king.square, opponent)
 
+    def checkmated(self, color: typing.Literal['black', 'white'], check: moves.Move) -> bool:
+        king = self.board.getPieces(color=color, type=['K'])[0]
+        adjacent = self.board.adjacentSquares(king.square)
+        for square in adjacent:
+            if ((not self.board.isOccupied(square)
+                 or self.board.getPieceAt(square).color != color)
+                and not self.threatened(square, check.color)):
+                return False
+        check_square = check.end
+        intervening = self.board.interveningSquares(king.square, check_square)
+        
+
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
 
@@ -146,56 +158,10 @@ class Game:
                     return
                 move = moves.Capture(start, dest)
 
-        # check bishop move
-        elif moving_piece.type == 'B':
+        # check bishop, rook or queen move
+        elif moving_piece.type in ('B', 'R', 'Q'):
             # check intervening squares
-            r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
-            f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
-            f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
-            squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
-            if any(self.board.isOccupied(square) for square in squares):
-                # UI message: Illegal move.
-                return
-            if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == current:
-                    # UI message: "You can't capture your own pieces."
-                    return
-                move = moves.Capture(start, dest)
-
-        # check rook move
-        elif moving_piece.type == 'R':
-            # check intervening squares
-            if start[0] == dest[0]:
-                r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
-                squares = [start[0] + str(r) for r in range(r1+1, r2)]
-            else:
-                f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
-                f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
-                squares = [self.files[f] + start[1] for f in range(f1+1, f2)]
-            if any(self.board.isOccupied(square) for square in squares):
-                # UI message: Illegal move.
-                return
-            if self.board.isOccupied(dest):
-                if self.board.getPieceAt(dest).color == current:
-                    # UI message: "You can't capture your own pieces."
-                    return
-                move = moves.Capture(start, dest)
-
-        # check queen move
-        elif moving_piece.type == 'Q':
-            # check intervening squares
-            if start[0] == dest[0]:
-                r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
-                squares = [start[0] + str(r) for r in range(r1+1, r2)]
-            elif start[1] == dest[1]:
-                f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
-                f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
-                squares = [self.files[f] + start[1] for f in range(f1+1, f2)]
-            else:
-                r1, r2 = min(int(start[1]), int(dest[1])), max(int(start[1]), int(dest[1]))
-                f1 = min(self.files.index(start[0]), self.files.index(dest[0]))
-                f2 = max(self.files.index(start[0]), self.files.index(dest[0]))
-                squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
+            squares = self.board.interveningSquares(start, dest)
             if any(self.board.isOccupied(square) for square in squares):
                 # UI message: Illegal move.
                 return
