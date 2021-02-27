@@ -18,26 +18,29 @@ class Game:
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
 
-    def inCheck(self, color: typing.Literal['black', 'white']) -> bool:
-        king = self.board.getPieces(color=color, type=['K'])[0]
-        opponent = 'black' if color == 'white' else 'white'
+    def threatened(self, square: str, opponent: typing.Literal['black', 'white']) -> bool:
+        """Checks if square is threatened by opponent."""
         pawns = self.board.getPieces(color=opponent, type=[''])
-        f1, f2 = self.files.index(king.square[0]) + 1, self.files.index(king.square[0]) - 1
-        r = int(king.square[1]) + 1 if color == 'white' else -1
-        if any(p.square in (self.files[f1] + str(r), self.files[f2] + str(r)) 
-               for p in pawns):
+        f1, f2 = self.files.index(square[0]) + 1, self.files.index(square[0]) - 1
+        if any(p.square[0] in (f1,f2) and p.legal_move(square) for p in pawns):
             return True
-        elif any(piece.color == opponent and piece.legal_move(king.square) 
-                 for piece in self.board.scanDiagonals(king.square)):
+        elif any(piece.color == opponent and piece.legal_move(square) 
+                 for piece in self.board.scanDiagonals(square)):
             return True
-        elif any(piece.color == opponent and piece.legal_move(king.square) 
-                 for piece in self.board.scanRankandFile(king.square)):
+        elif any(piece.color == opponent and piece.legal_move(square) 
+                 for piece in self.board.scanRankandFile(square)):
             return True
-        elif any(piece.legal_move(king.square) 
+        elif any(piece.legal_move(square) 
                  for piece in self.board.getPieces(type=['N'], color=opponent)):
             return True
         else:
             return False
+
+    def inCheck(self, color: typing.Literal['black', 'white']) -> bool:
+        """Checks if the given player is in check."""
+        king = self.board.getPieces(color=color, type=['K'])[0]
+        opponent = 'black' if color == 'white' else 'white'
+        return self.threatened(king.square, opponent)
 
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
@@ -64,11 +67,15 @@ class Game:
             if any(self.board.isOccupied(square) for square in squares):
                 # UI message 'Illegal move.'
                 return
+            intermediate = ('d' if dest[0] == 'c' else 'f') + dest[1]
+            if self.threatened(dest, opponent) or self.threatened(intermediate, opponent):
+                # UI message: Illegal move.
+                return
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
                                 current)
-            self.move_history.append(move)
             self.players[current].can_castle = False
             self.board.move(start, dest)
+            # move the rook
             if dest[0] == 'c':
                 self.board.move('a'+start[1], 'd'+start[1])
             elif dest[0] == 'g':
@@ -81,6 +88,7 @@ class Game:
                 self.players[opponent].in_check = True
                 move.check = True
                 # UI message: check
+            self.move_history.append(move)
             return
 
         if not moving_piece.legal_move(dest):
@@ -192,6 +200,9 @@ class Game:
 
         # check king move
         elif moving_piece.type == 'K':
+            if self.threatened(dest, opponent):
+                # UI message: Illegal move.
+                return
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == current:
                     # UI message: "You can't capture your own pieces."
