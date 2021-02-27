@@ -60,6 +60,12 @@ class Game:
             if not self.players[current].can_castle or self.players[current].in_check:
                 # UI message: Illegal move.
                 return
+            # check rook is present
+            rook_square = ('a' if dest[0] == 'c' else 'h') + dest[1]
+            if (not self.board.isOccupied(rook_square) 
+                or self.board.getPieceAt(rook_square).type != 'R'):
+                # UI message: Illegal move.
+                return
             # check intervening squares
             squares = [file + '1' for file in (('b', 'c', 'd') 
                                                if dest[0] == 'c' 
