@@ -4,9 +4,10 @@ import typing
 
 
 class Game:
+    """Stores information for a game of chess."""
+
     files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
 
-    """Stores information for a game of chess."""
     def __init__(self, *, to_move: typing.Literal['black', 'white'] = 'white',
                  move_history: list[moves.BaseMove] | None = None,
                  standard_position: bool = True):
