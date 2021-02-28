@@ -52,8 +52,39 @@ class Game:
                 and not self.threatened(square, check.color)):
                 return False
         check_square = check.end
+        # can checking piece be captured?
+        if self.threatened(check_square, color):
+            for piece in (self.board.getPieces(color=color, type=['N', 'K', ''])
+                          + self.board.scanDiagonals(check_square) 
+                          + self.board.scanRankandFile(check_square)):
+                if (piece.color == color and piece.legal_move(check_square)
+                    and (piece.type != '' 
+                         or piece.square[0] != check_square[0])):
+                    self.board.removePieceAt(check_square)
+                    self.board.move(piece.square, check_square)
+                    still_in_check = self.inCheck(color)
+                    self.board.move(check_square, piece.square)
+                    self.board.addPiece(check.piece_type, check_square, check.color)
+                    if not still_in_check:
+                        return False
+        # can check be blocked?
         intervening = self.board.interveningSquares(king.square, check_square)
-        
+        for square in intervening:
+            if self.threatened(square, color):
+                for piece in (self.board.getPieces(color=color, type=['N', 'K'])
+                              + self.board.scanDiagonals(check_square) 
+                              + self.board.scanRankandFile(check_square)):
+                    if (piece.color == color and piece.legal_move(check_square)
+                        and piece.type != ''):
+                        self.board.move(piece.square, check_square)
+                        still_in_check = self.inCheck(color)
+                        self.board.move(check_square, piece.square)
+                        if not still_in_check:
+                            return False
+            for pawn in self.board.getPieces(color=color, type=['']):
+                if pawn.square[0] == square[0] and pawn.legal_move(square):
+                    return False
+        return True
 
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""

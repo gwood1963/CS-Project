@@ -98,21 +98,24 @@ class Board:
         return squares
 
     def interveningSquares(self, square1: str, square2: str) -> list[str]:
+        rank_diff = abs(int(square1[1]) - int(square2[1]))
+        file_diff = abs(self.files.index(square1[0]) - self.files.index(square2[0]))
         if square1[0] == square2[0]:
             r1 = min(int(square1[1]), int(square2[1]))
             r2 = max(int(square1[1]), int(square2[1]))
-            squares = [square1[0] + str(r) for r in range(r1+1, r2)]
+            return [square1[0] + str(r) for r in range(r1+1, r2)]
         elif square1[1] == square2[1]:
             f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
             f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
-            squares = [self.files[f] + square1[1] for f in range(f1+1, f2)]
-        else:
+            return [self.files[f] + square1[1] for f in range(f1+1, f2)]
+        elif rank_diff == file_diff:
             r1 = min(int(square1[1]), int(square2[1]))
             r2 = max(int(square1[1]), int(square2[1]))
             f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
             f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
-            squares = [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
-        return squares
+            return [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
+        else:
+            return []
 
     def move(self, start: str, end: str):
         """Moves a piece on the board."""
