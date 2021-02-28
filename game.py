@@ -18,6 +18,7 @@ class Game:
         self.future_moves = [] # rolling back will add moves here
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
+        self.game_over = False
 
     def threatened(self, square: str, opponent: typing.Literal['black', 'white']) -> bool:
         """Checks if square is threatened by opponent."""
@@ -88,6 +89,10 @@ class Game:
 
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
+
+        # do nothing if game is over
+        if self.game_over:
+            return
 
         current = self.to_move
         opponent = 'black' if current == 'white' else 'white'
@@ -234,7 +239,13 @@ class Game:
         if self.inCheck(opponent):
             self.players[opponent].in_check = True
             move.check = True
-            # UI message: check
+            if self.checkmated(opponent, move):
+                # UI message: checkmate
+                move.checkmate = True
+                self.game_over = True
+            else:
+                # UI message: check
+                pass
         
         self.move_history.append(move)
         self.to_move = opponent
