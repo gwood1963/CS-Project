@@ -87,6 +87,50 @@ class Game:
                     return False
         return True
 
+    def rollback(self, mv: moves.BaseMove | None = None):
+        """Rolls back one move.
+        Will roll back last move by default,
+        mv parameter should only be used to undo a move 
+        that has not been added to move_history yet
+        """
+        move = self.future_moves.pop() if mv is None else mv
+        
+        opponent = 'black' if move.color == 'white' else 'white'
+        
+        if isinstance(move, moves.Castle):
+            rank = '1' if move.color == 'white' else '8'
+            
+            if move.side == 'queenside':
+                self.board.move('c' + rank, 'e' + rank)
+                self.board.move('d' + rank, 'a' + rank)
+            else: # side == 'kingside'
+                self.board.move('g' + rank, 'e' + rank)
+                self.board.move('f' + rank, 'h' + rank)
+            self.players[move.color].can_castle = True
+            
+        elif isinstance(move, moves.Move):
+            # return moving piece to starting square
+            if (isinstance(move, moves.Promotion) 
+                or isinstance(move, moves.PromotionCapture)):
+                # if move is a promotion a new pawn needs to be created
+                self.board.addPiece('', move.start, move.color)
+                self.board.removePieceAt(move.end)
+            else:
+                self.board.move(move.end, move.start)
+
+            # replace captured piece
+            if isinstance(move, moves.EnPassant):
+                self.board.addPiece(move.captured_type, 
+                                    move.captured_square, opponent)
+            elif isinstance(move, moves.Capture):
+                self.board.addPiece(move.captured_type, move.end, opponent)
+
+        # update game info
+        if move.check:
+            self.players[opponent].in_check = False
+        self.game_over = False
+        self.future_moves.append(move)
+
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
 
@@ -126,8 +170,8 @@ class Game:
             if self.threatened(dest, opponent) or self.threatened(intermediate, opponent):
                 # UI message: Illegal move.
                 return
-            move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside',
-                                current)
+            move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside')
+            move.color = current
             self.players[current].can_castle = False
             self.board.move(start, dest)
             # move the rook
@@ -231,7 +275,7 @@ class Game:
         
         # check if new position puts a player in check
         if self.inCheck(current):
-            # roll back position
+            self.rollback(move)
             # UI alert: Illegal move.
             return
         elif self.players[current].in_check:

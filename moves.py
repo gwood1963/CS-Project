@@ -5,8 +5,13 @@ import abc
 # contains Move class and its subclasses
 
 
+@dataclasses.dataclass()
 class BaseMove(abc.ABC):
     """Base class for move types"""
+    
+    color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
+    check: bool = dataclasses.field(init=False, default=False)
+    checkmate: bool = dataclasses.field(init=False, default=False)
 
 
 @dataclasses.dataclass
@@ -20,10 +25,6 @@ class Move(BaseMove):
     end: str
 
     piece_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
-    color: typing.Literal['black', 'white'] = dataclasses.field(init=False)
-
-    check: bool = dataclasses.field(init=False)
-    checkmate: bool = dataclasses.field(init=False)
 
     # shows whether string representation requires starting square
     show_start: typing.Literal['none', 'rank', 'file'] = dataclasses.field(init=False, default='none')
@@ -59,10 +60,6 @@ class Castle(BaseMove):
     Stores player colour and which side they castled on.
     """
     side: typing.Literal['kingside', 'queenside']
-    colour: typing.Literal['black', 'white']
-
-    check: bool = dataclasses.field(init=False)
-    checkmate: bool = dataclasses.field(init=False)
 
     def __str__(self) -> str:
         end = '#' if self.checkmate else '+' if self.check else ''
