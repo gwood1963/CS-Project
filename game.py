@@ -196,7 +196,7 @@ class Game:
             while self.move_number != move_number:
                 self.rollforward()
 
-    def move(self, start: str, dest: str): # return value used by interface
+    def move(self, start: str, dest: str):
         """Moves a piece from start to dest."""
 
         # do nothing if game is over
