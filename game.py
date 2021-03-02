@@ -246,7 +246,9 @@ class Game:
             else:
                 # UI message: check
                 pass
-        
+
+        if moving_piece.type == 'K':
+            self.players[current].can_castle = False
         self.move_history.append(move)
         self.to_move = opponent
         # update UI
