@@ -15,10 +15,11 @@ class Game:
                         'white': player.Player('white')}
         self.to_move: typing.Literal['black', 'white'] = to_move
         self.move_history = move_history if move_history is not None else []
-        self.future_moves = [] # rolling back will add moves here
+        self.future_moves: list[moves.BaseMove] = [] # rolling back will add moves here
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
         self.game_over = False
+        self.move_number: int = 0
 
     def threatened(self, square: str, opponent: typing.Literal['black', 'white']) -> bool:
         """Checks if square is threatened by opponent."""
@@ -130,6 +131,70 @@ class Game:
             self.players[opponent].in_check = False
         self.game_over = False
         self.future_moves.append(move)
+        self.move_number -= 1
+
+        # update UI
+
+    def rollforward(self, mv: moves.BaseMove | None = None):
+        """Rolls forward one move.
+        parameter allows move to be specified - will be used for multiplayer
+        uses first move from move_history if mv not specified
+        """
+        if mv is not None:
+            self.future_moves.clear()
+            move = mv
+        else:
+            move = self.future_moves.pop()
+        
+        opponent = 'black' if move.color == 'white' else 'white'
+        
+        if isinstance(move, moves.Castle):
+            rank = '1' if move.color == 'white' else '8'
+            
+            if move.side == 'queenside':
+                self.board.move('e' + rank, 'c' + rank)
+                self.board.move('a' + rank, 'd' + rank)
+            else: # side == 'kingside'
+                self.board.move('e' + rank, 'g' + rank)
+                self.board.move('h' + rank, 'f' + rank)
+            self.players[move.color].can_castle = False
+            
+        elif isinstance(move, moves.Move):
+            # remove captured piece
+            if isinstance(move, moves.EnPassant):
+                self.board.removePieceAt(move.captured_square)
+            elif isinstance(move, moves.Capture):
+                self.board.removePieceAt(move.end)
+            
+            # move piece
+            if (isinstance(move, moves.Promotion) 
+                or isinstance(move, moves.PromotionCapture)):
+                # if move is a promotion a new pawn needs to be created
+                self.board.addPiece(move.promote_type, move.end, move.color)
+                self.board.removePieceAt(move.start)
+            else:
+                self.board.move(move.start, move.end)
+
+        # update game info
+        if move.check:
+            self.players[opponent].in_check = True
+        if move.checkmate:
+            self.game_over = False
+        self.move_history.append(move)
+        self.move_number += 1
+
+        # update UI
+
+    def go_to_move(self, move_number: int):
+        if not 0 <= move_number <= self.move_number + len(self.future_moves):
+            # UI message: Invalid move number.
+            pass
+        elif move_number < self.move_number:
+            while self.move_number != move_number:
+                self.rollback()
+        elif move_number > self.move_number:
+            while self.move_number != move_number:
+                self.rollforward()
 
     def move(self, start: str, dest: str): # return value used by interface
         """Moves a piece from start to dest."""
@@ -270,8 +335,12 @@ class Game:
             self.board.removePieceAt(captured_square)
         move.color = current
         move.piece_type = moving_piece.type
-        self.board.move(start, dest)
-        moving_piece.square = dest
+        if isinstance(move, moves.Promotion) or isinstance(move, moves.PromotionCapture):
+            self.board.addPiece(move.promote_type, move.end, current)
+            self.board.removePieceAt(move.start)
+        else:
+            self.board.move(start, dest)
+            moving_piece.square = dest
         
         # check if new position puts a player in check
         if self.inCheck(current):
@@ -294,5 +363,6 @@ class Game:
         if moving_piece.type == 'K':
             self.players[current].can_castle = False
         self.move_history.append(move)
+        self.move_number += 1
         self.to_move = opponent
         # update UI
