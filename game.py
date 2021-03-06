@@ -14,7 +14,9 @@ class Game:
         self.players = {'black': player.Player('black'),
                         'white': player.Player('white')}
         self.to_move: typing.Literal['black', 'white'] = to_move
-        self.move_history = move_history if move_history is not None else []
+        self.move_history: list[moves.BaseMove] = (
+            move_history if move_history is not None else []
+        )
         self.future_moves: list[moves.BaseMove] = [] # rolling back will add moves here
         self.board = (board.Board.standardPosition() 
                       if standard_position else board.Board())
