@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="pieces">
+    <file>images/Chess_rdt60.png</file>
+    <file>images/Chess_rlt60.png</file>
+    <file>images/Chess_bdt60.png</file>
+    <file>images/Chess_blt60.png</file>
+    <file>images/Chess_kdt60.png</file>
+    <file>images/Chess_klt60.png</file>
+    <file>images/Chess_ndt60.png</file>
+    <file>images/Chess_nlt60.png</file>
+    <file>images/Chess_pdt60.png</file>
+    <file>images/Chess_plt60.png</file>
+    <file>images/Chess_qdt60.png</file>
+    <file>images/Chess_qlt60.png</file>
+  </qresource>
+</RCC>
