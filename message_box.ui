@@ -34,5 +34,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>OK_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>MessageBox</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>92</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>92</x>
+     <y>48</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
