@@ -1,7 +1,7 @@
 from __future__ import annotations
 import board, moves, player
 import typing
-import user_error
+import input_error
 import ui_handler
 
 class Game:
@@ -106,7 +106,7 @@ class Game:
         (move does this to detect checks)
         """
         if len(self.move_history) == 0:
-            raise user_error.UserError('No moves to roll back.')
+            raise input_error.InputError('No moves to roll back.')
         move = self.move_history.pop() if mv is None else mv
         
         opponent = 'black' if move.color == 'white' else 'white'
@@ -156,7 +156,7 @@ class Game:
             self.future_moves.clear()
             move = mv
         elif len(self.future_moves) == 0:
-            raise user_error.UserError('No moves to roll forward.')
+            raise input_error.InputError('No moves to roll forward.')
         else:
             move = self.future_moves.pop()
         
@@ -200,7 +200,7 @@ class Game:
 
     def go_to_move(self, move_number: int):
         if not 0 <= move_number <= self.move_number + len(self.future_moves):
-            raise user_error.UserError('Invalid move number.')
+            raise input_error.InputError('Invalid move number.')
         elif move_number < self.move_number:
             while self.move_number != move_number:
                 self.rollback()
@@ -219,7 +219,7 @@ class Game:
         opponent = 'black' if current == 'white' else 'white'
         moving_piece = self.board.getPieceAt(start)
         if moving_piece.color != current:
-            raise user_error.UserError('You can only move your own pieces.')
+            raise input_error.InputError('You can only move your own pieces.')
 
         move: moves.BaseMove = moves.Move(start, dest)
 
@@ -227,21 +227,21 @@ class Game:
         if (moving_piece.type == 'K' and dest[0] in ('c', 'g')
             and start[1] == dest[1]):
             if not self.players[current].can_castle or self.players[current].in_check:
-                raise user_error.UserError('Illegal move.')
+                raise input_error.InputError('Illegal move.')
             # check rook is present
             rook_square = ('a' if dest[0] == 'c' else 'h') + dest[1]
             if (not self.board.isOccupied(rook_square) 
                 or self.board.getPieceAt(rook_square).type != 'R'):
-                raise user_error.UserError('Illegal move.')
+                raise input_error.InputError('Illegal move.')
             # check intervening squares
             squares = [file + dest[1] for file in (('b', 'c', 'd') 
                                                    if dest[0] == 'c' 
                                                    else ('f', 'g'))]
             if any(self.board.isOccupied(square) for square in squares):
-                raise user_error.UserError('Illegal move.')
+                raise input_error.InputError('Illegal move.')
             intermediate = ('d' if dest[0] == 'c' else 'f') + dest[1]
             if self.threatened(dest, opponent) or self.threatened(intermediate, opponent):
-                raise user_error.UserError('You cannot castle into or across check.')
+                raise input_error.InputError('You cannot castle into or across check.')
             move = moves.Castle('queenside' if dest[0] == 'c' else 'kingside')
             move.color = current
             self.players[current].can_castle = False
@@ -253,7 +253,7 @@ class Game:
                 self.board.move('h'+start[1], 'f'+start[1])
             if self.inCheck(current):
                 # roll back position
-                raise user_error.UserError('You cannot move into check.')
+                raise input_error.InputError('You cannot move into check.')
             if self.inCheck(opponent):
                 self.players[opponent].in_check = True
                 move.check = True
@@ -263,7 +263,7 @@ class Game:
             return
 
         if not moving_piece.legal_move(dest):
-            raise user_error.UserError('Illegal move.')
+            raise input_error.InputError('Illegal move.')
 
         # check pawn moves
         elif moving_piece.type == '':
@@ -273,14 +273,14 @@ class Game:
                     start[0] + str(int(start[1]) 
                                    + (1 if current == 'white' else -1))
                 ):
-                    raise user_error.UserError('Illegal move.')
+                    raise input_error.InputError('Illegal move.')
                 if dest[1] == ('8' if current == 'white' else '1'): 
                     move = moves.Promotion(start, dest)
                     move.promote_type = self.parent_window.getPromoteType()
             elif start[0] != dest[0] and self.board.isOccupied(dest):
                 # capturing a piece
                 if self.board.getPieceAt(dest).color == current:
-                    raise user_error.UserError('You cannot capture your own pieces.')
+                    raise input_error.InputError('You cannot capture your own pieces.')
                 if dest[1] == ('8' if current == 'white' else '1'): 
                     move = moves.PromotionCapture(start, dest)
                     move.promote_type = self.parent_window.getPromoteType()
@@ -296,13 +296,13 @@ class Game:
                     move = moves.EnPassant(start, dest)
                     move.captured_square = square
                 else:
-                    raise user_error.UserError('Illegal move.')
+                    raise input_error.InputError('Illegal move.')
 
         # check knight move
         elif moving_piece.type == 'N':
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == current:
-                    raise user_error.UserError("You can't capture your own pieces.")
+                    raise input_error.InputError("You can't capture your own pieces.")
                 move = moves.Capture(start, dest)
 
         # check bishop, rook or queen move
@@ -311,19 +311,19 @@ class Game:
             squares = self.board.interveningSquares(start, dest)
             if any(self.board.isOccupied(square) for square in squares):
                 print(squares)
-                raise user_error.UserError('You cannot jump over other pieces.')
+                raise input_error.InputError('You cannot jump over other pieces.')
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == current:
-                    raise user_error.UserError("You can't capture your own pieces.")
+                    raise input_error.InputError("You can't capture your own pieces.")
                 move = moves.Capture(start, dest)
 
         # check king move
         elif moving_piece.type == 'K':
             if self.threatened(dest, opponent):
-                raise user_error.UserError('You cannot move into check.')
+                raise input_error.InputError('You cannot move into check.')
             if self.board.isOccupied(dest):
                 if self.board.getPieceAt(dest).color == current:
-                    raise user_error.UserError("You can't capture your own pieces.")
+                    raise input_error.InputError("You can't capture your own pieces.")
                 move = moves.Capture(start, dest)
 
         if isinstance(move, moves.Capture):
@@ -344,7 +344,7 @@ class Game:
         # check if new position puts a player in check
         if self.inCheck(current):
             self.rollback(move)
-            raise user_error.UserError('You cannot make a move that would leave your king in check.')
+            raise input_error.InputError('You cannot make a move that would leave your king in check.')
         elif self.players[current].in_check:
             self.players[current].in_check = False
         if self.inCheck(opponent):

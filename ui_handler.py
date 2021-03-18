@@ -1,16 +1,20 @@
 from __future__ import annotations
-from moves import BaseMove, Castle, EnPassant
+
 import typing
-from user_error import UserError
 
 from PySide6.QtCore import QByteArray, QMargins, QMimeData, Qt
+from PySide6.QtGui import (QBrush, QColor, QDrag, QDragEnterEvent,
+                           QDragMoveEvent, QDropEvent, QMouseEvent, QPixmap)
+from PySide6.QtWidgets import (QDialog, QFrame, QHBoxLayout, QLabel,
+                               QMainWindow, QPushButton, QTableWidgetItem)
+
 import game
-from message_box import Ui_MessageBox
 from game_window import Ui_MainWindow
-from new_game_window import Ui_new_game_dialog
 from go_to_move import Ui_go_to_move
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QMainWindow, QFrame, QPushButton, QTableWidgetItem
-from PySide6.QtGui import QBrush, QColor, QDrag, QDragEnterEvent, QDragMoveEvent, QDropEvent, QMouseEvent, QPixmap
+from input_error import InputError
+from message_box import Ui_MessageBox
+from new_game_window import Ui_new_game_dialog
+
 
 class GoToMoveDialog(QDialog):
     def __init__(self):
@@ -201,7 +205,7 @@ class MainWindow(QMainWindow):
                 else:
                     try:
                         self.game.move(start, end)
-                    except UserError as msg:
+                    except InputError as msg:
                         self.displayMessage(msg.msg)
                         event.ignore()
                     else:
@@ -213,7 +217,7 @@ class MainWindow(QMainWindow):
 
                         self.updateBoard()
 
-                        self.addMoveHistory(move)
+                        self.addMoveHistory(str(move), move.color)
 
                         if event.source() == self.ui.board:
                             event.setDropAction(Qt.MoveAction)
@@ -243,20 +247,20 @@ class MainWindow(QMainWindow):
         promote_dialog.exec_()
         return self.promote_type
 
-    def addMoveHistory(self, move: BaseMove):
-        move_entry = QTableWidgetItem(str(move))
+    def addMoveHistory(self, move: str, color: typing.Literal['black', 'white']):
+        move_entry = QTableWidgetItem(move)
         move_num = self.game.move_number
         rows = self.ui.move_history.rowCount()
         if move_num < self.moveCount():
             self.ui.move_history.clear()
             self.ui.move_history.setRowCount(0)
             for mv in self.game.move_history:
-                self.addMoveHistory(mv)
+                self.addMoveHistory(str(mv), color)
             return
-        if move.color == 'white' and move_num != 1:
+        if color == 'white' and move_num != 1:
             self.ui.move_history.insertRow(rows)
             rows += 1
-        col = 0 if move.color == 'white' else 1
+        col = 0 if color == 'white' else 1
         move_entry.setTextAlignment(Qt.AlignCenter)
         self.ui.move_history.setItem(rows-1, col, move_entry)
 
@@ -279,7 +283,7 @@ class MainWindow(QMainWindow):
         current = self.game.move_number
         try:
             self.game.rollback()
-        except UserError as e:
+        except InputError as e:
             self.displayMessage(e.msg)
         else:
             row, col = self.moveAt(current)
@@ -290,7 +294,7 @@ class MainWindow(QMainWindow):
     def rollForward(self):
         try:
             self.game.rollforward()
-        except UserError as e:
+        except InputError as e:
             self.displayMessage(e.msg)
         else:
             current = self.game.move_number
@@ -307,13 +311,13 @@ class MainWindow(QMainWindow):
             move_number -= 1
         try:
             self.game.go_to_move(move_number)
-        except UserError as e:
+        except InputError as e:
             self.displayMessage(e.msg)
         else:
             self.ui.move_history.clear()
             self.ui.move_history.setRowCount(1 if color == 'white' else 0)
             for mv in self.game.move_history:
-                self.addMoveHistory(mv)
+                self.addMoveHistory(str(mv), mv.color)
             i = 0
             while i < len(self.game.future_moves):
                 row, col = self.moveAt(self.game.move_number + i + 1)
