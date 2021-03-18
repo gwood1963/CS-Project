@@ -43,7 +43,7 @@ class Pawn(Piece):
         else: # colour is white
             if int(dest[1]) - int(self.square[1]) == 2:
                 return self.square[1] == '2'
-            elif int(self.square[1]) - int(dest[1]) == 1:
+            elif int(dest[1]) - int(self.square[1]) == 1:
                 return True
             else:
                 return False

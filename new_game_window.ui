@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>new_game_dialog</class>
  <widget class="QDialog" name="new_game_dialog">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +14,10 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>New game</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -104,5 +110,38 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>response</sender>
+   <signal>accepted()</signal>
+   <receiver>new_game_dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>112</x>
+     <y>208</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>113</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>response</sender>
+   <signal>rejected()</signal>
+   <receiver>new_game_dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>112</x>
+     <y>208</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>113</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

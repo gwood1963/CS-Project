@@ -44,7 +44,7 @@ class Board:
         """Returns all pieces that satisfy a condition
         e.g. all white pieces, all rooks, all black knights
         """
-        filters = []
+        filters: list[typing.Callable[[pieces.Piece], bool]] = []
         if color is not None:
             def f1(p: pieces.Piece): return p.color == color
             filters.append(f1)
@@ -58,38 +58,38 @@ class Board:
         """Returns first piece on each diagonal from square."""
         rank, file = int(square[1]), self.files.index(square[0])
         directions = ((1,1), (-1,1), (-1,-1), (1,-1))
-        pieces = []
+        pieces_: list[pieces.Piece] = []
         for direction in directions:
             r, f = rank + direction[1], file + direction[0]
             while 1 <= r <= 8 and 0 <= f <= 7:
                 s = self.files[f] + str(r)
                 if self.isOccupied(s):
-                    pieces.append(self.getPieceAt(s))
+                    pieces_.append(self.getPieceAt(s))
                     break
                 r += direction[1]
                 f += direction[0]
-        return pieces
+        return pieces_
 
     def scanRankandFile(self, square: str) -> list[pieces.Piece]:
         """Returns first pieces on rank and file in each direction from square."""
         rank, file = int(square[1]), self.files.index(square[0])
         directions = ((1,0), (0,1), (-1,0), (0,-1))
-        pieces = []
+        pieces_: list[pieces.Piece] = []
         for direction in directions:
             r, f = rank + direction[1], file + direction[0]
             while 1 <= r <= 8 and 0 <= f <= 7:
                 s = self.files[f] + str(r)
                 if self.isOccupied(s):
-                    pieces.append(self.getPieceAt(s))
+                    pieces_.append(self.getPieceAt(s))
                     break
                 r += direction[1]
                 f += direction[0]
-        return pieces
+        return pieces_
 
     def adjacentSquares(self, square: str) -> list[str]:
         file = self.files.index(square[0])
         rank = int(square[1])
-        squares = []
+        squares: list[str] = []
         dirs = ((1,0), (1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1))
         for dir in dirs:
             f, r = file+dir[0], rank+dir[1]
@@ -98,13 +98,15 @@ class Board:
         return squares
 
     def interveningSquares(self, square1: str, square2: str) -> list[str]:
-        rank_diff = abs(int(square1[1]) - int(square2[1]))
-        file_diff = abs(self.files.index(square1[0]) - self.files.index(square2[0]))
-        if square1[0] == square2[0]:
+        rank_diff = int(square1[1]) - int(square2[1])
+        file_diff = self.files.index(square1[0]) - self.files.index(square2[0])
+        if -1 <= rank_diff <= 1 and -1 <= file_diff <= 1:
+            return []
+        elif file_diff == 0:
             r1 = min(int(square1[1]), int(square2[1]))
             r2 = max(int(square1[1]), int(square2[1]))
             return [square1[0] + str(r) for r in range(r1+1, r2)]
-        elif square1[1] == square2[1]:
+        elif rank_diff == 0:
             f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
             f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
             return [self.files[f] + square1[1] for f in range(f1+1, f2)]
@@ -113,7 +115,13 @@ class Board:
             r2 = max(int(square1[1]), int(square2[1]))
             f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
             f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
-            return [self.files[f] + str(r) for f,r in (range(f1+1, f2), range(r1+1, r2))]
+            return [self.files[f] + str(r) for f,r in zip(range(f1+1, f2), range(r1+1, r2))]
+        elif rank_diff == -file_diff:
+            r1 = min(int(square1[1]), int(square2[1]))
+            r2 = max(int(square1[1]), int(square2[1]))
+            f1 = min(self.files.index(square1[0]), self.files.index(square2[0]))
+            f2 = max(self.files.index(square1[0]), self.files.index(square2[0]))
+            return [self.files[f] + str(r) for f,r in zip(range(f1+1, f2), range(r2-1, r1))]
         else:
             return []
 
@@ -121,6 +129,7 @@ class Board:
         """Moves a piece on the board."""
         if self.isOccupied(start) and not self.isOccupied(end):
             self.position[end] = self.position[start]
+            self.position[end].move(end)
             self.removePieceAt(start)
 
     @classmethod

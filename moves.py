@@ -13,6 +13,10 @@ class BaseMove(abc.ABC):
     check: bool = dataclasses.field(init=False, default=False)
     checkmate: bool = dataclasses.field(init=False, default=False)
 
+    @abc.abstractmethod
+    def __str__(self) -> str:
+        pass
+
 
 @dataclasses.dataclass
 class Move(BaseMove):
@@ -37,8 +41,9 @@ class Move(BaseMove):
         elif self.show_start == 'rank':
             start = self.start[1]
 
-        return (f'{self.piece_type}{start}{self.end}'
-                + '#' if self.checkmate else '+' if self.check else '')
+        res = (self.piece_type + start + self.end
+               + ('#' if self.checkmate else ('+' if self.check else '')))
+        return res
 
 
 @dataclasses.dataclass()
@@ -49,7 +54,7 @@ class Capture(Move):
     captured_type: typing.Literal['', 'N', 'B', 'R', 'K', 'Q'] = dataclasses.field(init=False)
 
     def __str__(self) -> str:
-        original = str(super())
+        original = super().__str__()
         return ((original[:-2] if self.piece_type != '' else self.start[0]) 
                 + f'x{original[-2:]}')
 
@@ -75,7 +80,7 @@ class Promotion(Move):
     promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
 
     def __str__(self):
-        return str(super()) + self.promote_type
+        return super().__str__() + self.promote_type
 
 
 @dataclasses.dataclass()
@@ -84,7 +89,7 @@ class PromotionCapture(Capture):
     promote_type: typing.Literal['N', 'B', 'R', 'Q'] = dataclasses.field(init=False)
 
     def __str__(self):
-        return str(super()) + self.promote_type
+        return super().__str__() + self.promote_type
 
 @dataclasses.dataclass()
 class EnPassant(Capture):
