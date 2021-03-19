@@ -61,31 +61,38 @@ class Game:
         # can king move?
         adjacent = self.board.adjacentSquares(king.square)
         for square in adjacent:
-            if ((not self.board.isOccupied(square)
-                 or self.board.getPieceAt(square).color != color)
-                and not self.threatened(square, check.color)):
+            if (not self.board.isOccupied(square)
+                or self.board.getPieceAt(square).color != color):
+                k_square = king.square
                 try:
-                    self.move(king.square, square)
+                    self.to_move = color
+                    self.move(k_square, square)
                 except input_error.InputError:
-                    return True
-                return False
+                    self.board.addPiece('K', k_square, color)
+                    self.to_move = check.color
+                else:
+                    self.to_move = check.color
+                    print(1)
+                    return False
             
         check_square = check.end
         
         # can checking piece be captured?
         if self.threatened(check_square, color):
-            for piece in (self.board.getPieces(color=color, type=['N', 'K', ''])
+            for piece in (self.board.getPieces(color=color, type=['N', ''])
                           + self.board.scanDiagonals(check_square) 
                           + self.board.scanRankandFile(check_square)):
                 if (piece.color == color and piece.legalMove(check_square)
                     and (piece.type != '' 
                          or piece.square[0] != check_square[0])):
+                    old_square = piece.square
                     self.board.removePieceAt(check_square)
-                    self.board.move(piece.square, check_square)
+                    self.board.move(old_square, check_square)
                     still_in_check = self.inCheck(color)
-                    self.board.move(check_square, piece.square)
+                    self.board.move(check_square, old_square)
                     self.board.addPiece(check.piece_type, check_square, check.color)
                     if not still_in_check:
+                        print(2)
                         return False
                     
         # can check be blocked?
@@ -97,13 +104,16 @@ class Game:
                               + self.board.scanRankandFile(check_square)):
                     if (piece.color == color and piece.legalMove(check_square)
                         and piece.type != ''):
-                        self.board.move(piece.square, check_square)
+                        old_square = piece.square
+                        self.board.move(old_square, check_square)
                         still_in_check = self.inCheck(color)
-                        self.board.move(check_square, piece.square)
+                        self.board.move(check_square, old_square)
                         if not still_in_check:
+                            print(3)
                             return False
             for pawn in self.board.getPieces(color=color, type=['']):
                 if pawn.square[0] == square[0] and pawn.legalMove(square):
+                    print(4)
                     return False
         return True
 
@@ -158,7 +168,7 @@ class Game:
 
     def rollforward(self, mv: moves.BaseMove | None = None):
         """Rolls forward one move.
-        parameter allows move to be specified - will be used for multiplayer
+        parameter allows move to be specified
         uses first move from move_history if mv not specified
         """
         if mv is not None:
