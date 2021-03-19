@@ -18,17 +18,11 @@ class Ui_new_game_dialog(object):
         if not new_game_dialog.objectName():
             new_game_dialog.setObjectName(u"new_game_dialog")
         new_game_dialog.setWindowModality(Qt.WindowModal)
-        new_game_dialog.resize(228, 243)
+        new_game_dialog.resize(179, 166)
         new_game_dialog.setModal(True)
-        self.horizontalLayout = QHBoxLayout(new_game_dialog)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.game_modes = QTabWidget(new_game_dialog)
-        self.game_modes.setObjectName(u"game_modes")
-        self.single_player = QWidget()
-        self.single_player.setObjectName(u"single_player")
-        self.verticalLayout = QVBoxLayout(self.single_player)
+        self.verticalLayout = QVBoxLayout(new_game_dialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.to_move = QGroupBox(self.single_player)
+        self.to_move = QGroupBox(new_game_dialog)
         self.to_move.setObjectName(u"to_move")
         self.horizontalLayout_3 = QHBoxLayout(self.to_move)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -47,7 +41,7 @@ class Ui_new_game_dialog(object):
 
         self.verticalLayout.addWidget(self.to_move)
 
-        self.start_pos = QGroupBox(self.single_player)
+        self.start_pos = QGroupBox(new_game_dialog)
         self.start_pos.setObjectName(u"start_pos")
         self.horizontalLayout_2 = QHBoxLayout(self.start_pos)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -66,27 +60,17 @@ class Ui_new_game_dialog(object):
 
         self.verticalLayout.addWidget(self.start_pos)
 
-        self.response = QDialogButtonBox(self.single_player)
+        self.response = QDialogButtonBox(new_game_dialog)
         self.response.setObjectName(u"response")
         self.response.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.response.setCenterButtons(True)
 
         self.verticalLayout.addWidget(self.response)
 
-        self.game_modes.addTab(self.single_player, "")
-        self.multi_player = QWidget()
-        self.multi_player.setObjectName(u"multi_player")
-        self.game_modes.addTab(self.multi_player, "")
-
-        self.horizontalLayout.addWidget(self.game_modes)
-
 
         self.retranslateUi(new_game_dialog)
         self.response.accepted.connect(new_game_dialog.accept)
         self.response.rejected.connect(new_game_dialog.reject)
-
-        self.game_modes.setCurrentIndex(0)
-
 
         QMetaObject.connectSlotsByName(new_game_dialog)
     # setupUi
@@ -99,7 +83,5 @@ class Ui_new_game_dialog(object):
         self.start_pos.setTitle(QCoreApplication.translate("new_game_dialog", u"Starting position ...", None))
         self.standard.setText(QCoreApplication.translate("new_game_dialog", u"Standard", None))
         self.custom.setText(QCoreApplication.translate("new_game_dialog", u"Custom", None))
-        self.game_modes.setTabText(self.game_modes.indexOf(self.single_player), QCoreApplication.translate("new_game_dialog", u"singleplayer", None))
-        self.game_modes.setTabText(self.game_modes.indexOf(self.multi_player), QCoreApplication.translate("new_game_dialog", u"multiplayer", None))
     # retranslateUi
 

@@ -29,15 +29,15 @@ class Game:
         """Checks if square is threatened by opponent."""
         pawns = self.board.getPieces(color=opponent, type=[''])
         f1, f2 = self.files.index(square[0]) + 1, self.files.index(square[0]) - 1
-        if any(p.square[0] in (f1,f2) and p.legal_move(square) for p in pawns):
+        if any(p.square[0] in (f1,f2) and p.legalMove(square) for p in pawns):
             return True
-        elif any(piece.color == opponent and piece.legal_move(square) 
+        elif any(piece.color == opponent and piece.legalMove(square) 
                  for piece in self.board.scanDiagonals(square)):
             return True
-        elif any(piece.color == opponent and piece.type != '' and piece.legal_move(square) 
+        elif any(piece.color == opponent and piece.type != '' and piece.legalMove(square) 
                  for piece in self.board.scanRankandFile(square)):
             return True
-        elif any(piece.legal_move(square) 
+        elif any(piece.legalMove(square) 
                  for piece in self.board.getPieces(type=['N'], color=opponent)):
             return True
         else:
@@ -57,19 +57,27 @@ class Game:
         if len(kings) == 0:
             return False
         king = kings[0]
+
+        # can king move?
         adjacent = self.board.adjacentSquares(king.square)
         for square in adjacent:
             if ((not self.board.isOccupied(square)
                  or self.board.getPieceAt(square).color != color)
                 and not self.threatened(square, check.color)):
+                try:
+                    self.move(king.square, square)
+                except input_error.InputError:
+                    return True
                 return False
+            
         check_square = check.end
+        
         # can checking piece be captured?
         if self.threatened(check_square, color):
             for piece in (self.board.getPieces(color=color, type=['N', 'K', ''])
                           + self.board.scanDiagonals(check_square) 
                           + self.board.scanRankandFile(check_square)):
-                if (piece.color == color and piece.legal_move(check_square)
+                if (piece.color == color and piece.legalMove(check_square)
                     and (piece.type != '' 
                          or piece.square[0] != check_square[0])):
                     self.board.removePieceAt(check_square)
@@ -79,6 +87,7 @@ class Game:
                     self.board.addPiece(check.piece_type, check_square, check.color)
                     if not still_in_check:
                         return False
+                    
         # can check be blocked?
         intervening = self.board.interveningSquares(king.square, check_square)
         for square in intervening:
@@ -86,7 +95,7 @@ class Game:
                 for piece in (self.board.getPieces(color=color, type=['N', 'K'])
                               + self.board.scanDiagonals(check_square) 
                               + self.board.scanRankandFile(check_square)):
-                    if (piece.color == color and piece.legal_move(check_square)
+                    if (piece.color == color and piece.legalMove(check_square)
                         and piece.type != ''):
                         self.board.move(piece.square, check_square)
                         still_in_check = self.inCheck(color)
@@ -94,7 +103,7 @@ class Game:
                         if not still_in_check:
                             return False
             for pawn in self.board.getPieces(color=color, type=['']):
-                if pawn.square[0] == square[0] and pawn.legal_move(square):
+                if pawn.square[0] == square[0] and pawn.legalMove(square):
                     return False
         return True
 
@@ -103,7 +112,7 @@ class Game:
         Will roll back last move by default,
         mv parameter should only be used to undo a move 
         that has not been added to move_history yet
-        (move does this to detect checks)
+        (move does this to test if a move will leave the king in check)
         """
         if len(self.move_history) == 0:
             raise input_error.InputError('No moves to roll back.')
@@ -198,7 +207,7 @@ class Game:
         self.move_number += 1
         self.to_move = opponent
 
-    def go_to_move(self, move_number: int):
+    def goToMove(self, move_number: int):
         if not 0 <= move_number <= self.move_number + len(self.future_moves):
             raise input_error.InputError('Invalid move number.')
         elif move_number < self.move_number:
@@ -211,9 +220,13 @@ class Game:
     def move(self, start: str, dest: str):
         """Moves a piece from start to dest."""
 
+        # if no move is made, do nothing
+        if start == dest:
+            return
+
         # do nothing if game is over
         if self.game_over:
-            return
+            raise input_error.InputError('The game is over.')
 
         current = self.to_move
         opponent = 'black' if current == 'white' else 'white'
@@ -252,7 +265,7 @@ class Game:
             elif dest[0] == 'g':
                 self.board.move('h'+start[1], 'f'+start[1])
             if self.inCheck(current):
-                # roll back position
+                self.rollback(move)
                 raise input_error.InputError('You cannot move into check.')
             if self.inCheck(opponent):
                 self.players[opponent].in_check = True
@@ -262,7 +275,7 @@ class Game:
             self.move_number += 1
             return
 
-        if not moving_piece.legal_move(dest):
+        if not moving_piece.legalMove(dest):
             raise input_error.InputError('Illegal move.')
 
         # check pawn moves
@@ -357,5 +370,6 @@ class Game:
         if moving_piece.type == 'K':
             self.players[current].can_castle = False
         self.move_history.append(move)
+        self.future_moves.clear()
         self.move_number += 1
         self.to_move = opponent

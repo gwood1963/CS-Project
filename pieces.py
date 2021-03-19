@@ -16,7 +16,7 @@ class Piece(abc.ABC):
         """Returns piece type."""
 
     @abc.abstractmethod
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         """Tests if the piece can move to a given square."""
 
     def move(self, dest: str):
@@ -29,7 +29,7 @@ class Pawn(Piece):
     def type(self):
         return ''
     
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         if abs(files.index(self.square[0]) - files.index(dest[0])) > 1:
             return False
@@ -55,7 +55,7 @@ class Knight(Piece):
     def type(self):
         return 'N'
 
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
@@ -68,7 +68,7 @@ class Bishop(Piece):
     def type(self):
         return 'B'
         
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
@@ -81,7 +81,7 @@ class Rook(Piece):
     def type(self):
         return 'R'
 
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
@@ -94,7 +94,7 @@ class Queen(Piece):
     def type(self):
         return 'Q'
 
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
@@ -107,7 +107,7 @@ class King(Piece):
     def type(self):
         return 'K'
 
-    def legal_move(self, dest: str) -> bool:
+    def legalMove(self, dest: str) -> bool:
         files = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')
         rank_diff = abs(int(dest[1]) - int(self.square[1]))
         file_diff = abs(files.index(dest[0]) - files.index(self.square[0]))
